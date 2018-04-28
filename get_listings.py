@@ -2,7 +2,7 @@
 
 import bs4 as bs
 import urllib.request
-from datetime import datetime
+import datetime
 import logging
 from collections import OrderedDict
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_url(country='uk', region='london',
-                 date_time=datetime.now()):
+                 date_time=datetime.datetime.now()):
     """ Generates event page url
     Args:
         country (str): 2 letter ISO country code
@@ -21,7 +21,10 @@ def generate_url(country='uk', region='london',
             eg: london or midlands
         date_time (datetime.datetime): datetime of request, defaults to current
     """
-    date_str = str(date_time.date())
+    if type(date_time) == datetime.datetime:
+        date_str = str(date_time.date())
+    else:
+        date_str = str(date_time)
 
     base_url = 'https://www.residentadvisor.net/events/{}/{}/day/{}'
     return base_url.format(country, region, date_str)
@@ -77,6 +80,26 @@ def get_and_parse_events(url):
     return output
 
 
+def parse_events_to_speech(events):
+    """takes list of events in format output by
+    choose_events and parses them into alexa speakable text
+    Args:
+        events (list): list of events and details.
+    Returns:
+        list[str]: list of speakable text strings.
+    """
+    def _speak_event(event):
+        template = '{} at {}, featuring {} . There are {} people attending'
+        return template.format(event[1]['event_name'],
+                               event[0],
+                               event[1]['event_lineup'],
+                               event[1]['number_attending']
+                               )
+
+    return [_speak_event(event) for event in events]
+
+
+
 def choose_events(events_dict, region='london', max_num=5):
     """ chooses max_num events in order of preference, or sorted
     by number attending if there are not enough preferences.
@@ -125,30 +148,13 @@ def choose_events(events_dict, region='london', max_num=5):
     return output
 
 
-def parse_events_to_speech(events):
-    """takes list of events in format output by
-    choose_events and parses them into alexa speakable text
-    Args:
-        events (list): list of events and details.
-    Returns:
-        list[str]: list of speakable text strings.
-    """
-    def _speak_event(event):
-        template = '{} at {}, featuring {} . There are {} people attending'
-        return template.format(event[1]['event_name'],
-                               event[0],
-                               event[1]['event_lineup'],
-                               event[1]['number_attending']
-                               )
-
-    return [_speak_event(event) for event in events]
-
-
 if __name__ == '__main__':
     # offline testing
     url = 'https://www.residentadvisor.net/events/uk/london/day/2018-04-13'
 
     # region = 'london'
+
+    url = generate_url(country='uk', region='london')
 
     events = get_and_parse_events(url)
 
