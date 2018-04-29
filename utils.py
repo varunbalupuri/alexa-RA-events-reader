@@ -1,5 +1,3 @@
-#utils
-
 import datetime
 
 def parse_events_to_speech(events, eventCity, eventDate):
@@ -19,11 +17,10 @@ def parse_events_to_speech(events, eventCity, eventDate):
                                )
 
     events_list = [_speak_event(event) for event in events]
-    
+    # add 2 second break between reading of each event.
     cleaned_template = ' <break time="2s"/> '.join(events_list).replace('&','and')
-    
     intro = 'Suggested events for {} in {}'.format(eventDate, eventCity)
-
+    # Format into SSML - flask-ask automatically detects this.
     speech_template = '<speak> ' + intro + '<break time="2s"/>' + \
                        cleaned_template +' </speak>'
 
@@ -41,20 +38,9 @@ def get_nearest_weekend_date(date_time):
 
     if (weekday == 6):
         diff = 7
-
     if (weekday < 5):
         diff = 4-weekday
-
     else:
         diff = 0
 
     return (date_time + datetime.timedelta(days=diff)).date()
-
-
-
-
-if __name__ == '__main__':
-    dt = datetime.datetime.now()
-    print(get_nearest_weekend_date(dt))
-    dt = datetime.datetime(2018,4 , 22)
-    print(get_nearest_weekend_date(dt))

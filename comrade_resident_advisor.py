@@ -41,6 +41,20 @@ def read_events(eventCity, eventDate):
     to_speak = parse_events_to_speech(chosen_events, eventCity, eventDate)
     return statement(to_speak)
 
+@ask.intent('AMAZON.HelpIntent')
+def help():
+    help_template = 'please ask me what events are on for a city and for a date'
+return statement(help_template)
+
+@ask.intent('AMAZON.StopIntent')
+def stop():
+    stop_template = 'exiting comrade resident advisor'
+    return statement(bye_text)
+
+@ask.session_ended
+def session_ended():
+    return '{}', 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)

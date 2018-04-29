@@ -6,13 +6,13 @@ import datetime
 import logging
 from collections import OrderedDict
 
-
-from config import WHITELIST
+from config import (WHITELIST, DEFAULT_COUNTRY,
+                    DEFAULT_REGION, MAXIMUM_EVENTS)
 
 logger = logging.getLogger(__name__)
 
 
-def generate_url(country='uk', region='london',
+def generate_url(country=DEFAULT_COUNTRY, region=DEFAULT_REGION,
                  date_time=datetime.datetime.now()):
     """ Generates event page url
     Args:
@@ -100,7 +100,8 @@ def parse_events_to_speech(events):
 
 
 
-def choose_events(events_dict, region='london', max_num=5):
+def choose_events(events_dict, region=DEFAULT_REGION,
+                  max_num=MAXIMUM_EVENTS):
     """ chooses max_num events in order of preference, or sorted
     by number attending if there are not enough preferences.
     Args:
@@ -149,15 +150,8 @@ def choose_events(events_dict, region='london', max_num=5):
 
 
 if __name__ == '__main__':
-    # offline testing
-    url = 'https://www.residentadvisor.net/events/uk/london/day/2018-04-13'
-
-    # region = 'london'
 
     url = generate_url(country='uk', region='london')
-
     events = get_and_parse_events(url)
-
     chosen_events = choose_events(events, region='london')
-
-    a = parse_events_to_speech(chosen_events)
+    print(parse_events_to_speech(chosen_events))
