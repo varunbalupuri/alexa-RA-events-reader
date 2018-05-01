@@ -9,15 +9,14 @@ import logging
 from utils import get_nearest_weekend_date, parse_events_to_speech
 from get_listings import generate_url, get_and_parse_events, choose_events
 
-logger = logging.getLogger('flask_ask').setLevel(logging.DEBUG)
-
+logging.getLogger('flask_ask').setLevel(logging.DEBUG)
 app = Flask(__name__)
 ask = Ask(app, "/comrade_resident_advisor")
 
 
 @ask.launch
 def start_skill():
-    logger.debug('entering Comrade Resident Advisor')
+    logging.info('entering Comrade Resident Advisor')
     welcome_message = 'Welcome to comrade resident advisor, Which city and date would you like events information for?'
     return question(welcome_message)
 
@@ -31,9 +30,9 @@ def start_skill():
             )
 def read_events(eventCity, eventDate):
     eventCity=eventCity.lower()
-    logger.debug('getting events for city: {}, date: {}'.format(eventCity, eventDate))
+    logging.info('getting events for city: {}, date: {}'.format(eventCity, eventDate))
     url = generate_url(country='uk', region=eventCity, date_time=eventDate)
-    logger.info('requesting url: {}'.format(url))
+    logging.info('requesting url: {}'.format(url))
 
     events = get_and_parse_events(url)
     chosen_events = choose_events(events, region=eventCity)
@@ -44,12 +43,12 @@ def read_events(eventCity, eventDate):
 @ask.intent('AMAZON.HelpIntent')
 def help():
     help_template = 'please ask me what events are on for a city and for a date'
-return statement(help_template)
+    return statement(help_template)
 
 @ask.intent('AMAZON.StopIntent')
 def stop():
     stop_template = 'exiting comrade resident advisor'
-    return statement(bye_text)
+    return statement(stop_template)
 
 @ask.session_ended
 def session_ended():
