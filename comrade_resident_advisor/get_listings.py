@@ -7,9 +7,10 @@ import logging
 from collections import OrderedDict
 
 from config import (WHITELIST, DEFAULT_COUNTRY,
-                    DEFAULT_REGION, MAXIMUM_EVENTS)
+                    DEFAULT_REGION, MAXIMUM_EVENTS,
+                    BASE_URL)
 
-logger = logging.getLogger(__name__)
+logging.getLogger('flask_ask').setLevel(logging.DEBUG)
 
 
 def generate_url(country=DEFAULT_COUNTRY, region=DEFAULT_REGION,
@@ -26,8 +27,8 @@ def generate_url(country=DEFAULT_COUNTRY, region=DEFAULT_REGION,
     else:
         date_str = str(date_time)
 
-    base_url = 'https://www.residentadvisor.net/events/{}/{}/day/{}'
-    return base_url.format(country, region, date_str)
+    BASE_URL = 'https://www.residentadvisor.net/events/{}/{}/day/{}'
+    return BASE_URL.format(country, region, date_str)
 
 
 def get_and_parse_events(url):
@@ -58,7 +59,7 @@ def get_and_parse_events(url):
             if (event_details_html is not None) and (event_lineup_html is not None):
                 event_name, event_venue = event_details_html.text.lower().rsplit(' at ', 1)
                 event_lineup = event_lineup_html.text
-                logger.debug('got - event: {}, venue: {}, lineup {}'.format(event_name,
+                logging.info('got - event: {}, venue: {}, lineup {}'.format(event_name,
                                                                             event_venue,
                                                                             event_lineup)
                              )
@@ -99,7 +100,6 @@ def parse_events_to_speech(events):
     return [_speak_event(event) for event in events]
 
 
-
 def choose_events(events_dict, region=DEFAULT_REGION,
                   max_num=MAXIMUM_EVENTS):
     """ chooses max_num events in order of preference, or sorted
@@ -120,7 +120,7 @@ def choose_events(events_dict, region=DEFAULT_REGION,
 
     # in case of no preferences for region, just take top by # attending
     if preferred_venues is None:
-        logger.info('no config for {}, taking top {} events'.format(region, max_num))
+        logging.info('no config for {}, taking top {} events'.format(region, max_num))
         return events[:max_num]
 
     # iterate through preferences and find valid listings
@@ -128,7 +128,7 @@ def choose_events(events_dict, region=DEFAULT_REGION,
     output = []
     for venue in preferred_venues:
         if chosen_cntr >= max_num:
-            logger.info('found sufficient events at preferred venues')
+            logging.info('found sufficient events at preferred venues')
             return output
 
         if events_dict.get(venue) is not None:
@@ -137,7 +137,7 @@ def choose_events(events_dict, region=DEFAULT_REGION,
 
     # if we still do not have max_num events in total, get more
     # by taking top events which are not in preferences
-    logger.info('appending additional events, not enough events in preferences')
+    logging.info('appending additional events, not enough events in preferences')
     for event in events:
         if chosen_cntr >= max_num:
             return output
